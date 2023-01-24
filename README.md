@@ -8,7 +8,7 @@
   - Сохранение конфигурации
   
 ### Установка для Windows
- Скачайте, разархивируйте и запустите [программу](https://github.com/cristalixmodded/CristalixModded-AutoFarm/releases/download/v0.0.2/main.exe)
+ Скачайте, разархивируйте и запустите [программу](https://github.com/matswuuu/Discord-AutoPost/releases/download/v0.0.2/main.zip)
   
 ### Установка для других ОС
   Для работы необходим [Python 3](https://www.python.org/downloads/), дополнительные библиотеки
