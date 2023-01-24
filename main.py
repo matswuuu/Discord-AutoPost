@@ -37,11 +37,11 @@ def new_config():
     random_delete = check_answer(random_delete)
         
     global MIN_delay
-    MIN_delay = input('Введите минимальный промежуток межуд сообщениями (в минутах): ')
+    MIN_delay = input('Введите минимальный промежуток между сообщениями (в минутах): ')
     MIN_delay = int(MIN_delay) * 60
     
     global MAX_delay
-    MAX_delay = input('Введите максимальный промежуток межуд сообщениями (в минутах): ')
+    MAX_delay = input('Введите максимальный промежуток между сообщениями (в минутах): ')
     MAX_delay = int(MAX_delay) * 60
 
     if save:
@@ -70,10 +70,12 @@ if save:
         discord_token = config.get('Config', 'discord_token')
         channel_ID = config.get('Config', 'channel_ID')
         advertisements = config.get('Config', 'advertisements')
-        delete = config.get('Config', 'delete')
-        random_delete = config.get('Config', 'random_delete')
-        MIN_delay = config.get('Config', 'MIN_delay')
-        MAX_delay = config.get('Config', 'MAX_delay')
+        advertisements = advertisements.replace('\'', '')
+        advertisements = advertisements.strip('][').split(', ')
+        delete = eval(config.get('Config', 'delete'))
+        random_delete = eval(config.get('Config', 'random_delete'))
+        MIN_delay = int(config.get('Config', 'MIN_delay'))
+        MAX_delay = int(config.get('Config', 'MAX_delay'))
     else:
         new_config()
 else:
@@ -85,6 +87,7 @@ while True:
     sended_message = sended_message.text.encode().decode('unicode-escape')
     sended_message_json = loads(sended_message.replace('\\', ''))
 
+    sleep(5)
     if delete:
         if not random_delete:
             if randint(0, 1) == 0:
