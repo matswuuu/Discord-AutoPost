@@ -1,15 +1,17 @@
-from discum import Client
-from random import SystemRandom, randint
-from json import loads
-from time import sleep
+import requests
+import json
+import random
+import time
 from configparser import ConfigParser
 from art import tprint
+import plyer
 
-tprint('AutoPost      v0.0.2')
+tprint('AutoPost')
 config = ConfigParser()
+api_version = '9'
 
 def check_answer(name):
-    if name == 'да':
+    if name == 'да' or 'lf':
         return True
     else:
         return False
@@ -25,24 +27,25 @@ def new_config():
     channel_ID = input('Введите ID канала, в который будут отсылаться сообщения: ')
     
     global advertisements
-    advertisements = input('Введите текст (можно добавить несколько вариантов, разделяя их с помощью ;): ')
-    advertisements = advertisements.split(';')
-    
+    advertisements = input('Введите текст (можно добавить несколько вариантов, разделяя их с помощью ; ): ')
+
     global delete
     delete = input('Удалять сообщения? (да/нет): ')
-    delete = check_answer(save)
+    delete = check_answer(delete)
         
     global random_delete
     random_delete = input('Всегда удалять сообщения? (да/нет): ')
     random_delete = check_answer(random_delete)
         
+    global notification
+    notification = input('Уведомлять о отправке сообщения? (да/нет): ')
+    notification = check_answer(notification)
+        
     global MIN_delay
     MIN_delay = input('Введите минимальный промежуток между сообщениями (в минутах): ')
-    MIN_delay = int(MIN_delay) * 60
     
     global MAX_delay
     MAX_delay = input('Введите максимальный промежуток между сообщениями (в минутах): ')
-    MAX_delay = int(MAX_delay) * 60
 
     if save:
         config['Config']['save'] = str(save)
@@ -51,8 +54,9 @@ def new_config():
         config['Config']['advertisements'] = str(advertisements)
         config['Config']['delete'] = str(delete)
         config['Config']['random_delete'] = str(random_delete)
-        config['Config']['MIN_delay'] = str(MIN_delay)
-        config['Config']['MAX_delay'] = str(MAX_delay)
+        config['Config']['MIN_delay'] = MIN_delay
+        config['Config']['MAX_delay'] = MAX_delay
+        config['Config']['notification'] = str(notification)
                
         with open('config.ini', 'w') as config_file:
             config.write(config_file)
@@ -64,35 +68,50 @@ if save:
     print('Последняя конфигурация: ')
     for x in config['Config']:
         print(x + ' = ' + config['Config'][x])
+        
     choice = input('Загрузить прошлую конфигурацию? (да/нет): ')
     choice = check_answer(choice)
     if choice:
         discord_token = config.get('Config', 'discord_token')
         channel_ID = config.get('Config', 'channel_ID')
         advertisements = config.get('Config', 'advertisements')
-        advertisements = advertisements.replace('\'', '')
-        advertisements = advertisements.strip('][').split(', ')
         delete = eval(config.get('Config', 'delete'))
         random_delete = eval(config.get('Config', 'random_delete'))
-        MIN_delay = int(config.get('Config', 'MIN_delay'))
-        MAX_delay = int(config.get('Config', 'MAX_delay'))
+        notification = eval(config.get('Config', 'notification'))
+        MIN_delay = config.get('Config', 'MIN_delay')
+        MAX_delay = config.get('Config', 'MAX_delay')
     else:
         new_config()
 else:
     new_config()
 
-bot = Client(token=discord_token)
+headers = {
+    'authorization': discord_token
+}
+
+advertisements = advertisements.split(';')
+MIN_delay = int(MIN_delay) * 60
+MAX_delay = int(MAX_delay) * 60
+
 while True:   
-    sended_message = bot.sendMessage(channelID=channel_ID, message=SystemRandom().choice(advertisements))
+    content = {
+        'content': random.SystemRandom().choice(advertisements)
+    }
+    sended_message = requests.post(f'https://discord.com/api/v{api_version}/channels/{channel_ID}/messages', headers=headers, data=content)
     sended_message = sended_message.text.encode().decode('unicode-escape')
-    sended_message_json = loads(sended_message.replace('\\', ''))
-
-    sleep(5)
+    sended_message_json = json.loads(sended_message.replace('\\', ''))
+    message_id = sended_message_json['id']
+    
     if delete:
-        if not random_delete:
-            if randint(0, 1) == 0:
-                bot.deleteMessage(channelID=channel_ID, messageID=sended_message_json['id'])
+        if random_delete:
+            if random.randint(0, 1) == 0:
+                requests.delete(f'https://discord.com/api/v{api_version}/channels/{channel_ID}/messages/{message_id}', headers=headers)
         else:
-            bot.deleteMessage(channelID=channel_ID, messageID=sended_message_json['id'])
+            requests.delete(f'https://discord.com/api/v{api_version}/channels/{channel_ID}/messages/{message_id}', headers=headers)
 
-    sleep(randint(MIN_delay, MAX_delay))
+    if notification:
+        plyer.notification.notify(title='AutoPost', message='Сообщение было успешно отправлено.')
+        
+    random_time = random.randint(MIN_delay, MAX_delay)
+    print('До следующего сообщения: ' + str(random_time) + ' сек.')
+    time.sleep(random_time)
