@@ -11,7 +11,7 @@
   - Уведомление о отправке сообщения
   
 ## Установка для Windows
-  [Скачать](https://github.com/matswuuu/Discord-AutoPost/releases/download/v0.0.2/AutoPost.zip), разархировать и запустить main.exe
+  [Скачать](https://github.com/matswuuu/Discord-AutoPost/releases/download/v0.0.1/AutoPost.zip), разархировать и запустить main.exe
  
 ### Установка для остальных платформ
   Для работы необходим [Python 3](https://www.python.org/downloads/), дополнительные библиотеки
