@@ -11,7 +11,7 @@ config = ConfigParser()
 api_version = '9'
 
 def check_answer(name):
-    if name == 'да' or 'lf':
+    if name == 'да':
         return True
     else:
         return False
